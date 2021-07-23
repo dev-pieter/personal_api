@@ -1,6 +1,6 @@
 # Personal API
 
-### An api for data handling on my Digital Ocean droplet.
+### A NodeJS/Express api for data handling on my Digital Ocean droplet.
 
 Blog:
 
