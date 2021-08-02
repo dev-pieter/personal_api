@@ -3,6 +3,7 @@ const bodyParser = require('body-parser')
 const app = express()
 const port = 3000
 const MongoClient = require('mongodb').MongoClient
+const { ObjectId } = require('mongodb');
 const dotenv = require('dotenv');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto'); 
@@ -101,6 +102,7 @@ app.post('/register', async function (req, res) {
 })
 
 
+//Login and generate token
 app.post('/login', async function (req, res){
 
   if(req.body){
@@ -110,8 +112,6 @@ app.post('/login', async function (req, res){
 
     if(exists){
       var verify = validatepassword(exists.hashedp, password)
-
-      console.log(verify)
 
       if(verify){
         return res.json({
@@ -141,6 +141,7 @@ app.post('/login', async function (req, res){
   })
 })
 
+//Get posts from daily category
 app.get('/get_daily', async function (req, res){
   const posts = await db.collection("blog_posts").find({category : 'daily'}).toArray()
 
@@ -154,8 +155,26 @@ app.get('/get_daily', async function (req, res){
   })
 })
 
+//Get posts from tutorial category
 app.get('/get_tutorial', async function (req, res){
   const posts = await db.collection("blog_posts").find({category : 'tutorial'}).toArray()
+
+  if(posts){
+    return res.json(posts)
+  }
+
+  res.status(201)
+  return res.json({
+    error: 'No posts.'
+  })
+})
+
+//Get single post
+app.get('/post/:id', async function (req, res){
+  const { id } = req.params
+  // console.log(id)
+  const posts = await db.collection("blog_posts").find({"_id" : ObjectId(id)}).toArray()
+  // console.log(posts)
 
   if(posts){
     return res.json(posts)
