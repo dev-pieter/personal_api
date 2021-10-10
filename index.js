@@ -7,14 +7,25 @@ const { ObjectId } = require('mongodb');
 const dotenv = require('dotenv');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
-const cors = require('cors')
+const cors = require('cors');
+var mongoUriBuilder = require('mongo-uri-builder');
 
-const url = 'mongodb://178.128.168.53:27017'
+const mongo_pwd = process.env.DB_PASS
+const mongo_user = process.env.DB_USER
+
+var url = mongoUriBuilder({
+	username: encodeURIComponent(mongo_user), // or user: 'user'
+	password: encodeURIComponent(mongo_pwd),
+	host: '178.128.168.53',
+	port: 27017
+})
+
+// const url = `mongodb://${mongo_user}:${mongo_pwd}@178.128.168.53:27017`
 dotenv.config();
 
-const dbName = 'personal'
+const dbName = 'blog'
 const secret = process.env.TOKEN_SECRET;
-const salt = process.env.SALT;
+const salt = process.env.SALT; 
 let db
 
 app.use(cors())
@@ -25,7 +36,7 @@ MongoClient.connect(url, { useNewUrlParser: true }, (err, client) => {
 
     // Storing a reference to the database so I can use it later
     db = client.db(dbName)
-    console.log(`Connected MongoDB: ${url}`)
+    console.log(`Connected MongoDB`)
     console.log(`Database: ${dbName}`)
 })
 
@@ -75,6 +86,7 @@ app.post('/register', async function(req, res) {
     if (req.body) {
         const { username, password, email } = req.body
         var hashedp = hashpassword(password)
+        // var hashedp = password
 
         var exists = await db.collection("accounts").findOne({ $or: [{ username: username }, { email: email }] });
 
