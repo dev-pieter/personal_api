@@ -10,6 +10,14 @@ const crypto = require('crypto');
 const cors = require('cors');
 var mongoUriBuilder = require('mongo-uri-builder');
 
+// const url = `mongodb://${mongo_user}:${mongo_pwd}@178.128.168.53:27017`
+dotenv.config();
+
+const dbName = 'blog'
+const secret = process.env.TOKEN_SECRET;
+const salt = process.env.SALT; 
+let db
+
 const mongo_pwd = process.env.DB_PASS
 const mongo_user = process.env.DB_USER
 
@@ -19,14 +27,6 @@ var url = mongoUriBuilder({
 	host: '178.128.168.53',
 	port: 27017
 })
-
-// const url = `mongodb://${mongo_user}:${mongo_pwd}@178.128.168.53:27017`
-dotenv.config();
-
-const dbName = 'blog'
-const secret = process.env.TOKEN_SECRET;
-const salt = process.env.SALT; 
-let db
 
 app.use(cors())
 app.use(bodyParser.json());
