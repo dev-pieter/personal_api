@@ -1,7 +1,7 @@
 const express = require('express')
 const bodyParser = require('body-parser')
 const app = express()
-const port = 3000
+const port = 3001
 const MongoClient = require('mongodb').MongoClient
 const { ObjectId } = require('mongodb');
 const dotenv = require('dotenv');
@@ -196,6 +196,26 @@ app.get('/post/:id', async function(req, res) {
     })
 })
 
+app.post('/add_view', async function(req, res) {
+    const { id } = req.body
+        // console.log(id)
+    const posts = await db.collection("blog_posts").findOne({ "_id": ObjectId(id) })
+        // console.log(posts)
+    // console.log(posts)
+
+    if (posts) {
+        const views = posts.views + 1 || 1
+        const update = await db.collection("blog_posts").updateOne({ "_id": ObjectId(id) }, { $set: { views : views } })
+        res.status(200)
+        return res.send("views updated")
+    }
+
+    res.status(201)
+    return res.json({
+        error: 'No posts.'
+    })
+})
+
 app.post('/add_post', async function(req, res) {
     // console.log(req.body)
     if (req.body) {
@@ -213,6 +233,29 @@ app.post('/add_post', async function(req, res) {
             })
 
             res.json(add)
+        } catch (error) {
+            res.status(201)
+            return res.json({
+                error: `${error}`
+            })
+        }
+
+    }
+
+})
+
+app.post('/update_post', async function(req, res) {
+    // console.log(req.body)
+    if (req.body) {
+        const post  = req.body
+
+        id = post._id
+        delete post._id
+
+        try {
+            await db.collection("blog_posts").updateOne({_id : ObjectId(id)},{ $set : post})
+
+            return res.send("Updated successfully")
         } catch (error) {
             res.status(201)
             return res.json({
