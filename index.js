@@ -2,15 +2,17 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const app = express();
 const port = 3000;
-const { ObjectId } = require("mongodb");
 const cors = require("cors");
 const { connect_db, get_db } = require("./lib/utils/db_utils");
-const {
-  authenticateToken,
-  hashpassword,
-  validatepassword,
-} = require("./lib/utils/auth_utils");
 const { author, register, login } = require("./lib/controllers/users");
+const {
+  get_post,
+  get_post_by_id,
+  add_view,
+  add_post,
+  update_post,
+  delete_post,
+} = require("./lib/controllers/posts");
 
 app.use(cors());
 app.use(bodyParser.json());
@@ -19,139 +21,30 @@ app.use(bodyParser.json());
 connect_db();
 
 //Returns my details for blog use
-app.post("/author", author(authenticateToken, get_db));
+app.post("/author", author(get_db));
 
 //Register user (will mainly be for blog comments)
-app.post("/register", register(hashpassword, get_db));
+app.post("/register", register(get_db));
 
 //Login and generate token
-app.post("/login", login(validatepassword, get_db));
+app.post("/login", login(get_db));
 
 //Get posts from daily category
-app.get("/get_daily", async function (req, res) {
-  const db = get_db();
-  const posts = await db
-    .collection("blog_posts")
-    .find({ category: "daily" })
-    .toArray();
-
-  if (posts) {
-    return res.json(posts);
-  }
-
-  res.status(201);
-  return res.json({
-    error: "No posts.",
-  });
-});
+app.get("/get_daily", get_post(get_db, "daily"));
 
 //Get posts from tutorial category
-app.get("/get_tutorial", async function (req, res) {
-  const posts = await db
-    .collection("blog_posts")
-    .find({ category: "tutorial" })
-    .toArray();
-
-  if (posts) {
-    return res.json(posts);
-  }
-
-  res.status(201);
-  return res.json({
-    error: "No posts.",
-  });
-});
+app.get("/get_tutorial", get_post(get_db, "tutorial"));
 
 //Get single post
-app.get("/post/:id", async function (req, res) {
-  const { id } = req.params;
-  // console.log(id)
-  const posts = await db
-    .collection("blog_posts")
-    .find({ _id: ObjectId(id) })
-    .toArray();
-  // console.log(posts)
+app.get("/post/:id", get_post_by_id(get_db));
 
-  if (posts) {
-    return res.json(posts);
-  }
+app.post("/add_view", add_view(get_db));
 
-  res.status(201);
-  return res.json({
-    error: "No posts.",
-  });
-});
+app.post("/add_post", add_post(get_db));
 
-app.post("/add_view", async function (req, res) {
-  const { id } = req.body;
-  // console.log(id)
-  const posts = await db
-    .collection("blog_posts")
-    .findOne({ _id: ObjectId(id) });
-  // console.log(posts)
-  // console.log(posts)
+app.post("/update_post", update_post(get_db));
 
-  if (posts) {
-    const views = posts.views + 1 || 1;
-    const update = await db
-      .collection("blog_posts")
-      .updateOne({ _id: ObjectId(id) }, { $set: { views: views } });
-    res.status(200);
-    return res.send("views updated");
-  }
-
-  res.status(201);
-  return res.json({
-    error: "No posts.",
-  });
-});
-
-app.post("/add_post", async function (req, res) {
-  // console.log(req.body)
-  if (req.body) {
-    const { post } = req.body;
-
-    try {
-      var add = await db.collection("blog_posts").insertOne({
-        category: post.category,
-        author: post.author,
-        heading: post.heading,
-        img_url: post.img_url,
-        markdown: post.markdown,
-      });
-
-      res.json(add);
-    } catch (error) {
-      res.status(201);
-      return res.json({
-        error: `${error}`,
-      });
-    }
-  }
-});
-
-app.post("/update_post", async function (req, res) {
-  // console.log(req.body)
-  if (req.body) {
-    const post = req.body;
-
-    id = post._id;
-    delete post._id;
-
-    try {
-      await db
-        .collection("blog_posts")
-        .updateOne({ _id: ObjectId(id) }, { $set: post });
-
-      return res.send("Updated successfully");
-    } catch (error) {
-      res.status(201);
-      return res.json({
-        error: `${error}`,
-      });
-    }
-  }
-});
+app.post("/delete_post", delete_post(get_db));
 
 app.listen(port, () => {
   console.log(`Example app listening at http://localhost:${port}`);
