@@ -20,5 +20,14 @@ jobs:
       - name: Install dependencies
         run: npm ci
         
+      - name: Create env file
+        run: |
+          touch .env
+          echo TOKEN_SECRET=$TOKEN_SECRET>> .env
+          echo SALT=$SALT >> .env
+          echo DB_PASS=$DB_PASS >> .env
+          echo DB_USER=$DB_USER >> .env
+          cat .env
+        
       - name: Restart server application
         run: pm2 restart api
