@@ -23,10 +23,10 @@ jobs:
       - name: Create env file
         run: |
           touch .env
-          echo TOKEN_SECRET=$TOKEN_SECRET>> .env
-          echo SALT=$SALT >> .env
-          echo DB_PASS=$DB_PASS >> .env
-          echo DB_USER=$DB_USER >> .env
+          echo TOKEN_SECRET=${{ secrets.TOKEN_SECRET }}>> .env
+          echo SALT=${{ secrets.SALT }} >> .env
+          echo DB_PASS=${{ secrets.DB_PASS }} >> .env
+          echo DB_USER=${{ secrets.DB_USER }} >> .env
           cat .env
         
       - name: Restart server application
