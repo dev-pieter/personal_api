@@ -38,12 +38,16 @@ app.get("/get_tutorial", get_post(get_db, "tutorial"));
 //Get single post
 app.get("/post/:id", get_post_by_id(get_db));
 
+//Increment post views
 app.post("/add_view", add_view(get_db));
 
+//Add a post
 app.post("/add_post", add_post(get_db));
 
+//Update a post
 app.post("/update_post", update_post(get_db));
 
+//Delete post
 app.post("/delete_post", delete_post(get_db));
 
 app.listen(port, () => {
